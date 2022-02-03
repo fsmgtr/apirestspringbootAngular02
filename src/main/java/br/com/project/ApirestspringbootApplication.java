@@ -7,8 +7,11 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 @EntityScan(basePackages = {"br.com.project.model"})
@@ -18,10 +21,30 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @EnableWebMvc
 @RestController
 @EnableAutoConfiguration
-public class ApirestspringbootApplication {
+public class ApirestspringbootApplication  implements WebMvcConfigurer{
 
 	public static void main(String[] args) {
 		SpringApplication.run(ApirestspringbootApplication.class, args);
+		
 	}
+	/*
+	/*Mapeamento global que reflete em todo o sistema
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/usuario/").allowedMethods("POST")
+		.allowedOrigins("localhost:8080");
+	 
+	}
+	*/
+	@CrossOrigin
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/usuario/**").allowedMethods("*").allowedOrigins("*");// Liberando o mapeamento de usuário para todas as origens.
+		 
+	 
+	}
+	
+	
+	
 
 }
