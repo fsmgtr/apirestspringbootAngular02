@@ -1,5 +1,6 @@
 package br.com.project.security;
 
+import java.io.IOException;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +35,7 @@ public class JWTTokenAutenticacaoService {
 
 	// Gerando token de autenticação e adicionando ao cabeçado e resposta http
 
-	public void addAuthentication(HttpServletResponse response, String username) throws Exception {
+	public void addAuthentication(HttpServletResponse response, String username) throws IOException {
 
 		// Montagem do TOKEN
 		String JWT = Jwts.builder() // chamada o gerador de TOKEN
