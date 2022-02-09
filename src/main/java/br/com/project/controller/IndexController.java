@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +51,8 @@ public class IndexController {
 		for (int pos = 0; pos < usuario.getTelefones().size(); pos++) {
 			usuario.getTelefones().get(pos).setUsuario(usuario);
 		}
+		String senhaCriptografada = new BCryptPasswordEncoder().encode(usuario.getSenha());
+		usuario.setSenha(senhaCriptografada);
 		Usuario usuarioSalvo = usuarioRepository.save(usuario);
 		return new ResponseEntity<Usuario>(usuarioSalvo, HttpStatus.OK);
 	}
@@ -56,6 +62,13 @@ public class IndexController {
 		for (int pos = 0; pos < usuario.getTelefones().size(); pos++) {
 			usuario.getTelefones().get(pos).setUsuario(usuario);
 		}
+		
+		Usuario userTemp = usuarioRepository.findUserByLogin(usuario.getLogin());
+		if (!userTemp.getSenha().equals(usuario.getSenha())) {
+			String senhaCriptografada = new BCryptPasswordEncoder().encode(usuario.getSenha());
+			usuario.setSenha(senhaCriptografada);
+		}
+		
 		Usuario usuarioSalvo = usuarioRepository.save(usuario);
 		return new ResponseEntity<Usuario>(usuarioSalvo, HttpStatus.OK);
 	}
@@ -65,11 +78,36 @@ public class IndexController {
 		Optional<Usuario> usuario = usuarioRepository.findById(id);
 		return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
 	}
+	@GetMapping(value = "v1/{id}")
+	public ResponseEntity<Usuario> listagemV1(@PathVariable(value = "id") Long id) {
+		Optional<Usuario> usuario = usuarioRepository.findById(id);
+		return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
+	}
+	
+	@GetMapping(value = "v2/{id}")
+	public ResponseEntity<Usuario> listagemV2(@PathVariable(value = "id") Long id) {
+		Optional<Usuario> usuario = usuarioRepository.findById(id);
+		return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
+	}
 
 	@GetMapping(value = "/usuarios")
 	public ResponseEntity<List<Usuario>> listagemTodos() {
 		Iterable<Usuario> usuarios = usuarioRepository.findAll();
 		return new ResponseEntity<List<Usuario>>((List<Usuario>) usuarios, HttpStatus.OK);
+	}
+	
+	/* Supondo que o carregamento de usuário seja um processo lento e que queremos controlar ele com cache para
+	 * agilizar processo*/
+	 
+	@GetMapping(value = "/usuarios/cache")
+	@CacheEvict(value = "CacheList", allEntries = true)//Remove cache não utilizado
+	@CachePut("CacheList")//Se tiver mudanças leva pro cache
+	public ResponseEntity<List<Usuario>> listagemTodosComCache() throws InterruptedException {
+		Iterable<Usuario> usuarios = usuarioRepository.findAll();
+		
+		//Thread.sleep(6000);//segura o código por 6 segundos simulando um processo lento SIMULAÇÃO
+		return new ResponseEntity<List<Usuario>>((List<Usuario>) usuarios, HttpStatus.OK);
+		
 	}
 
 	@GetMapping(value = "/")

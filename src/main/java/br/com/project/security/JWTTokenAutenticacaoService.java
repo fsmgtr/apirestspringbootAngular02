@@ -54,7 +54,7 @@ public class JWTTokenAutenticacaoService {
 	}
 
 	// Retorna o usuário validado com o TOKEN ou caso não seja válido retorna NULL
-	public Authentication getAuthentication(HttpServletRequest request) {
+	public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
 		// Pega o TOKEN enviado no cabeçalho HTTP
 		String token = request.getHeader(HEADER_STRING);
 
