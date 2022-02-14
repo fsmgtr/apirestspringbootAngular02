@@ -33,10 +33,78 @@ public class Usuario implements UserDetails {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	
+
+	private String cpf;
+
+	private String cep;
+	private String logradouro;
+	private String complemento;
+	private String bairro;
+	private String localidade;
+	private String uf;
+	private String ibge;
+
+	private String token;
+
+	public String getCep() {
+		return cep;
+	}
+
+	public void setCep(String cep) {
+		this.cep = cep;
+	}
+
+	public String getLogradouro() {
+		return logradouro;
+	}
+
+	public void setLogradouro(String logradouro) {
+		this.logradouro = logradouro;
+	}
+
+	public String getComplemento() {
+		return complemento;
+	}
+
+	public void setComplemento(String complemento) {
+		this.complemento = complemento;
+	}
+
+	public String getBairro() {
+		return bairro;
+	}
+
+	public void setBairro(String bairro) {
+		this.bairro = bairro;
+	}
+
+	public String getLocalidade() {
+		return localidade;
+	}
+
+	public void setLocalidade(String localidade) {
+		this.localidade = localidade;
+	}
+
+	public String getUf() {
+		return uf;
+	}
+
+	public void setUf(String uf) {
+		this.uf = uf;
+	}
+
+	public String getIbge() {
+		return ibge;
+	}
+
+	public void setIbge(String ibge) {
+		this.ibge = ibge;
+	}
+
 	@Column(unique = true)
 	private String login;
-	
+
 	private String senha;
 	private String nome;
 
@@ -58,16 +126,11 @@ public class Usuario implements UserDetails {
 
 	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Telefone> telefones = new ArrayList<Telefone>();
-	
+
 	@OneToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "usuarios_roles", uniqueConstraints = @UniqueConstraint(
-			columnNames = {"usuario_id", "roled_id"},  name="unique_role_user"),
-	joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table ="usuario", unique = false,
-	foreignKey = @ForeignKey(name = "usuario_fk" , value = ConstraintMode.CONSTRAINT)),
-	inverseJoinColumns =  @JoinColumn(name="roled_id", unique = false,
-	referencedColumnName = "id", updatable = false,
-	table = "role", foreignKey = @ForeignKey(name="role_fk" , value = ConstraintMode.CONSTRAINT)))
-	private List<Role> roles;//papeis ou acessos
+	@JoinTable(name = "usuarios_roles", uniqueConstraints = @UniqueConstraint(columnNames = { "usuario_id",
+			"roled_id" }, name = "unique_role_user"), joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", table = "usuario", unique = false, foreignKey = @ForeignKey(name = "usuario_fk", value = ConstraintMode.CONSTRAINT)), inverseJoinColumns = @JoinColumn(name = "roled_id", unique = false, referencedColumnName = "id", updatable = false, table = "role", foreignKey = @ForeignKey(name = "role_fk", value = ConstraintMode.CONSTRAINT)))
+	private List<Role> roles;// papeis ou acessos
 
 	@Override
 	public int hashCode() {
@@ -110,7 +173,7 @@ public class Usuario implements UserDetails {
 		this.senha = senha;
 	}
 
-	//São os acessos do usuário ROLE_ADM ou ROLE_TI
+	// São os acessos do usuário ROLE_ADM ou ROLE_TI
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return roles;
@@ -153,6 +216,22 @@ public class Usuario implements UserDetails {
 	public boolean isEnabled() {
 		// TODO Auto-generated method stub
 		return true;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public String getCpf() {
+		return cpf;
+	}
+
+	public void setCpf(String cpf) {
+		this.cpf = cpf;
 	}
 
 }

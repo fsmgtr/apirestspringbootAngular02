@@ -32,7 +32,7 @@ public class JWTTokenAutenticacaoService {
 
 	// prefixo que será retornar para a resposta ou cabeçalho
 	private static final String HEADER_STRING = "Authorization";
-
+	
 	// Gerando token de autenticação e adicionando ao cabeçado e resposta http
 
 	public void addAuthentication(HttpServletResponse response, String username) throws IOException {
@@ -49,6 +49,11 @@ public class JWTTokenAutenticacaoService {
 		// Adiciona no cabeçalho HTTP
 		response.addHeader(HEADER_STRING, token);
 
+		ApplicationContextLoad.getApplicationContext().getBean(UsuarioRepository.class).atualizaTokenUsuario(JWT,
+				username);
+		// Liberando respostas para portas diferentes que usam API ou clientes WEB
+		liberacaoCors(response);
+
 		// Adiciona a resposta no corpo Http também
 		response.getWriter().write("{\"Authorization\": \"" + token + "\"}");
 	}
@@ -58,22 +63,50 @@ public class JWTTokenAutenticacaoService {
 		// Pega o TOKEN enviado no cabeçalho HTTP
 		String token = request.getHeader(HEADER_STRING);
 
-		if (token != null) {
-			// faz a validação do TOKEN do usuário na requisição
-			String user = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(token.replace(TOKEN_PREFIX, "")).getBody()
-					.getSubject();
+		try {
+			if (token != null) {
+				String TokenLimpo = token.replace(TOKEN_PREFIX, "").trim();
 
-			if (user != null) {
-				Usuario usuario = ApplicationContextLoad.getApplicationContext().getBean(UsuarioRepository.class)
-						.findUserByLogin(user);// retornar o usuário logado
+				// faz a validação do TOKEN do usuário na requisição
+				String user = Jwts.parser().setSigningKey(SECRET).parseClaimsJws(TokenLimpo).getBody().getSubject();
 
-				if (usuario != null) {
-					return new UsernamePasswordAuthenticationToken(usuario.getLogin(), usuario.getSenha(),
-							usuario.getAuthorities());
+				if (user != null) {
+					Usuario usuario = ApplicationContextLoad.getApplicationContext().getBean(UsuarioRepository.class)
+							.findUserByLogin(user);// retornar o usuário logado
+
+					if (usuario != null) {
+						if (TokenLimpo.equalsIgnoreCase(usuario.getToken())) {
+							return new UsernamePasswordAuthenticationToken(usuario.getLogin(), usuario.getSenha(),
+									usuario.getAuthorities());
+						}
+					}
 				}
 			}
+		} catch (io.jsonwebtoken.ExpiredJwtException e) {
+			try {
+				response.getOutputStream().println("Seu Token está expirado, faça o login ou informe um novo Token");
+			} catch (IOException e1) {
+			}
 		}
+
+		liberacaoCors(response);
 		return null; // Não autorizado
+	}
+
+	private void liberacaoCors(HttpServletResponse response) {
+
+		if (response.getHeader("Access-Control-Allow-Origin") == null) {
+			response.addHeader("Access-Control-Allow-Origin", "*");
+		}
+		if (response.getHeader("Access-Control-Allow-Headers") == null) {
+			response.addHeader("Access-Control-Allow-Headers", "*");
+		}
+		if (response.getHeader("Access-Control-Request-Headers") == null) {
+			response.addHeader("Access-Control-Request-Headers", "*");
+		}
+		if (response.getHeader("Access-Control-Allow-Methods") == null) {
+			response.addHeader("Access-Control-Allow-Methods", "*");
+		}
 	}
 
 }

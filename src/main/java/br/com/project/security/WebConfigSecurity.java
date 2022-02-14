@@ -2,6 +2,7 @@ package br.com.project.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,6 +31,8 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter {
 		//Ativando a restrição a URL
 		.disable().authorizeRequests().antMatchers("/").permitAll()
 		.antMatchers("/index").permitAll()
+		//Liberado consultas, leituras, várias opções de uso para vários servidores
+		.antMatchers(HttpMethod.OPTIONS,"/**").permitAll()
 		//URL de logout - redireciona após o user deslogar do sistema
 		.anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
 		//mapeia a url de logout e invalida o usuário
